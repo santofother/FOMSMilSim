@@ -8,7 +8,18 @@ opened from Finder or the Dock can't see it. Godot then starts without C#, can't
 `project.godot` without its `"C#"` feature. That's what happened on 2026-11-21. Starting Godot from a terminal
 with the two variables below avoids all of that.
 
-## First time (and after switching branches or making a new worktree)
+## Easiest: double-click the launcher
+In Finder, double-click **`tools/open-godot.command`** in the repo folder. It builds the C#, imports the project the
+first time, and opens the Godot editor with .NET working. Then press **F5** (Run Project) to play. Your main repo
+folder stays on `main` (agents work in their own worktrees), so this always opens the latest landed build.
+Pull first to get new work: `git pull`. If macOS blocks the first double-click, right-click it → **Open**.
+
+You can drag the file to the right-hand side of the Dock for one-click launching.
+
+**Running the sandbox from the editor:** Debug → *Customize Run Instances…* → enable *Main Run Args* →
+`-- --scenario=s03_sandbox`. Or just press F5 for the default `m0_clash`.
+
+## By hand (what the launcher does)
 1. Get the latest code (discard anything the editor changed on its own first):
    ```bash
    cd ~/PersonalProjects/FOMSBattleSimulator && git restore project.godot && git switch main && git pull
