@@ -5,6 +5,7 @@
   "sides": [
     {
       "name": "Blue",
+      "auto_attack": true,
       "regiments": [
         {
           "unit": "gb_spearmen",
@@ -120,6 +121,7 @@
     },
     {
       "name": "Red",
+      "auto_attack": true,
       "regiments": [
         {
           "unit": "gb_spearmen",

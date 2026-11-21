@@ -1,5 +1,5 @@
 // Battle: the fixed-tick simulation loop (C2), seeded RNG (C3), orders queue (C5) and events (C6).
-// Owner: S01. Behaviour is still the M0 "advance and fight" until S02+ replace pieces.
+// Owner: S01.
 // Public API: Battle (ctor, TickDt, Tick, Time, Seed, Soldiers, Regiments, Events, Winner, AlivePerTeam,
 //             Terrain, Log, Issue, Step, ApplyDefs, Rand, RandAt, YawOf, LerpAngle)
 using System;
@@ -18,11 +18,6 @@ public sealed class Battle
     /// <summary>CONTRACT (C2): every Step advances exactly this many seconds.</summary>
     public const float TickDt = 1f / 30f;
 
-    // TUNE: M0 regiment behaviour; S02/S04 replace these.
-    const float EngageDistance = 18f;   // regiment front-to-front
-    const float ChargeDistance = 40f;
-    const float StopDistance = 2.5f;
-    const float PressSpeed = 0.6f;      // pace once in contact
     const float SearchRadius = 8f;
     const float SeparationRadius = 0.75f;
     const float MapRadius = 170f;
@@ -47,6 +42,8 @@ public sealed class Battle
     public Action<string> Log = Console.WriteLine;
 
     readonly List<Order> _pending = new();
+    // FIX(S02): invoke the order system from the fixed tick and feed its formation state to soldier movement.
+    readonly RegimentOrders _orders;
     readonly SpatialGrid _grid = new();
     bool[] _aliveSnap = Array.Empty<bool>();
     readonly Action<int> _updateSoldier;
@@ -69,6 +66,9 @@ public sealed class Battle
         }
         Regiments = regs.ToArray();
         AlivePerTeam = new int[Math.Max(2, scenario.Sides.Count)];
+        var autoAttack = new bool[scenario.Sides.Count];
+        for (int team = 0; team < autoAttack.Length; team++) autoAttack[team] = scenario.Sides[team].AutoAttack;
+        _orders = new RegimentOrders(Regiments, autoAttack, Terrain);
         foreach (var r in Regiments) AlivePerTeam[r.Team] += r.Count;
         Log($"[Sim] battle '{scenario.Id}' seed {Seed}: {Regiments.Length} regiments, {Soldiers.Count} soldiers");
     }
@@ -76,12 +76,12 @@ public sealed class Battle
     Regiment Spawn(int id, int team, UnitDef def, RegimentPlacement p)
     {
         int n = p.Soldiers > 0 ? p.Soldiers : def.Soldiers;
-        int cols = p.Cols > 0 ? p.Cols : Math.Max(4, (int)MathF.Round(MathF.Sqrt(n * 5f)));
+        int cols = Math.Min(n, p.Cols > 0 ? p.Cols : Math.Max(4, (int)MathF.Round(MathF.Sqrt(n * 5f))));
         var reg = new Regiment
         {
             Id = id, Team = team, UnitId = def.Id, Def = def, Count = n, Alive = n,
             Cols = cols, Rows = (n + cols - 1) / cols, Width = cols * def.Spacing,
-            Centre = p.PositionV, Facing = p.FacingV,
+            Centre = p.PositionV, Facing = p.FacingV, Morale = def.Morale, Ammo = def.Ammo,
         };
         var s = Soldiers;
         reg.First = s.AddRange(n);
@@ -120,7 +120,7 @@ public sealed class Battle
         {
             if (!defs.TryGetValue(r.UnitId, out var d)) continue;
             r.Def = d;
-            r.Width = r.Cols * d.Spacing;
+            r.Width = r.Cols * r.SlotSpacing;
         }
     }
 
@@ -138,22 +138,26 @@ public sealed class Battle
         for (int i = 0; i < n; i++) _aliveSnap[i] = s.IsAlive(i);
         _grid.Build(s, _aliveSnap);
 
-        UpdateRegiments(dt);
+        UpdateRouting();
+        _orders.Step(dt);
         Array.Copy(s.Yaw, s.PrevYaw, n);
 
         // WHY: each soldier writes only its own slots; damage to others is an order-independent Interlocked.Add (C3).
         Parallel.For(0, n, _updateSoldier);
         s.SwapPositions();
 
-        // sequential phase: deaths
+        // Sequential phase: report local defensive melee and resolve deaths.
         for (int i = 0; i < n; i++)
         {
             var st = s.State[i];
-            if (st == SoldierState.Dead || st == SoldierState.Gone || s.Hp[i] > 0) continue;
+            if (st == SoldierState.Dead || st == SoldierState.Gone) continue;
+            var reg = Regiments[s.RegimentId[i]];
+            if (reg.Activity == RegimentActivity.Idle && s.Target[i] >= 0)
+                reg.Activity = RegimentActivity.Fighting;
+            if (s.Hp[i] > 0) continue;
             s.State[i] = SoldierState.Dead;
             s.StateTime[i] = 0;
             s.Vel[i] = Vector2.Zero;
-            var reg = Regiments[s.RegimentId[i]];
             reg.Alive--;
             AlivePerTeam[s.Team[i]]--;
             Events.Add(new BattleEvent(EventKind.SoldierKilled, i, reg.Id, -1, s.Pos[i]));
@@ -165,14 +169,13 @@ public sealed class Battle
     {
         foreach (var o in _pending)
         {
-            Regiments[o.RegimentId].Order = o;
-            // TODO(S02): execute orders. Until then regiments keep the M0 "advance and fight" behaviour.
-            Log($"[Orders] tick {Tick}: {o}");
+            if (_orders.Apply(o)) Log($"[Orders] tick {Tick}: {o}");
+            else Log($"[Orders] tick {Tick}: rejected {o}");
         }
         _pending.Clear();
     }
 
-    void UpdateRegiments(float dt)
+    void UpdateRouting()
     {
         foreach (var reg in Regiments)
         {
@@ -184,30 +187,6 @@ public sealed class Battle
                 reg.Morale = 0;
                 Events.Add(new BattleEvent(EventKind.RegimentRouted, -1, reg.Id, -1, reg.Centre));
                 Log($"[Sim] tick {Tick}: regiment {reg.Id} (team {reg.Team}) routs, {reg.Alive}/{reg.Count} left");
-            }
-            if (reg.Routing) continue;
-
-            // nearest non-routing enemy regiment
-            Regiment best = null; float bestD = float.MaxValue;
-            foreach (var o in Regiments)
-            {
-                if (o.Team == reg.Team || o.Routing || o.Alive == 0) continue;
-                float d = Vector2.Distance(o.Centre, reg.Centre);
-                if (d < bestD) { bestD = d; best = o; }
-            }
-            reg.TargetRegiment = best?.Id ?? -1;
-            if (best == null) { reg.Activity = RegimentActivity.Idle; continue; }
-
-            reg.Activity = bestD < EngageDistance ? RegimentActivity.Fighting
-                         : bestD < ChargeDistance ? RegimentActivity.Engaging
-                         : RegimentActivity.Moving;
-            var dir = Vector2.Normalize(best.Centre - reg.Centre);
-            if (!reg.Engaged)
-                reg.Facing = Vector2.Normalize(Vector2.Lerp(reg.Facing, dir, 1f - MathF.Exp(-0.8f * dt)));
-            if (bestD > StopDistance)
-            {
-                float speed = reg.Engaged ? PressSpeed : bestD < ChargeDistance ? def.ChargeSpeed : def.Speed;
-                reg.Centre += dir * MathF.Min(speed * dt, bestD - StopDistance);
             }
         }
     }
@@ -244,19 +223,23 @@ public sealed class Battle
         else
         {
             int t = -1;
-            if (reg.Engaged)
+            bool pressingAttack = reg.Engaged && reg.TargetRegiment >= 0;
+            if (pressingAttack)
             {
                 t = s.Target[i];
                 s.Retarget[i] -= dt;
                 // WHY: read the tick-start alive snapshot, not Hp, which other threads change mid-phase (C3).
-                if (t < 0 || !_aliveSnap[t] || s.Retarget[i] <= 0)
+                if (t < 0 || !_aliveSnap[t] || s.RegimentId[t] != reg.TargetRegiment || s.Retarget[i] <= 0)
                 {
-                    t = FindNearestEnemy(i, p, SearchRadius);
-                    s.Target[i] = t;
+                    t = FindNearestEnemy(i, p, SearchRadius, reg.TargetRegiment);
                     s.Retarget[i] = 0.5f;
                 }
             }
-            else s.Target[i] = -1;
+            else if (reg.Activity == RegimentActivity.Idle && reg.Order is not Withdraw)
+            {
+                t = FindNearestEnemy(i, p, def.Reach);
+            }
+            s.Target[i] = t;
 
             if (t >= 0)
             {
@@ -265,7 +248,7 @@ public sealed class Battle
                 faceTarget = t;
                 if (dist > def.Reach)
                 {
-                    desired = d / MathF.Max(dist, 1e-4f) * def.RunSpeed;
+                    desired = d / dist * RegimentOrders.Pace(reg);
                 }
                 else
                 {
@@ -287,21 +270,24 @@ public sealed class Battle
             {
                 var delta = reg.Slot(i - reg.First) - p;
                 float len = delta.Length();
-                float speed = MathF.Min(len * 2f, reg.Engaged ? def.RunSpeed : def.ChargeSpeed + 0.6f);
-                desired = len > 1e-3f ? delta / len * speed : Vector2.Zero;
+                float speed = MathF.Min(len * 2f, RegimentOrders.Pace(reg));
+                desired = len > 0.22f ? delta / len * speed : Vector2.Zero;
             }
         }
 
         desired += Separation(i, p);
 
         var v = Vector2.Lerp(s.Vel[i], desired, 1f - MathF.Exp(-8f * dt));
-        s.Vel[i] = v;
-        s.NextPos[i] = p + v * dt;
+        // FIX(S02): soldiers also respect terrain while following their formation slots.
+        var next = p + v * dt;
+        bool walkable = Terrain.Walkable(next);
+        s.Vel[i] = v = walkable ? v : Vector2.Zero;
+        s.NextPos[i] = walkable ? next : p;
         float speedNow = v.Length();
 
         float targetYaw;
         if (faceTarget >= 0) targetYaw = YawOf(s.Pos[faceTarget] - p);
-        else if (speedNow > 0.4f) targetYaw = YawOf(v);
+        else if (speedNow > 0.4f && reg.Order is not Withdraw) targetYaw = YawOf(v);
         else targetYaw = YawOf(reg.Facing);
         s.Yaw[i] = LerpAngle(s.Yaw[i], targetYaw, 1f - MathF.Exp(-10f * dt));
 
@@ -343,7 +329,7 @@ public sealed class Battle
         return push;
     }
 
-    int FindNearestEnemy(int i, Vector2 p, float radius)
+    int FindNearestEnemy(int i, Vector2 p, float radius, int targetRegiment = -1)
     {
         var s = Soldiers;
         byte team = s.Team[i];
@@ -358,7 +344,7 @@ public sealed class Battle
             for (int k = a; k < b; k++)
             {
                 int j = sorted[k];
-                if (s.Team[j] == team) continue;
+                if (s.Team[j] == team || (targetRegiment >= 0 && s.RegimentId[j] != targetRegiment)) continue;
                 float d2 = Vector2.DistanceSquared(p, s.Pos[j]);
                 if (d2 < bestD2) { bestD2 = d2; best = j; }
             }

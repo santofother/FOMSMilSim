@@ -28,7 +28,7 @@ public sealed class Regiment
     public Vector2 Facing = new(0, 1);
     /// <summary>Frontage in metres.</summary>
     public float Width;
-    /// <summary>Current order, null = none. TODO(S02): executed by src/Sim/Orders/.</summary>
+    /// <summary>Current order, null = none.</summary>
     public Order Order;
     public RegimentActivity Activity = RegimentActivity.Idle;
     /// <summary>0–100. TODO(S05).</summary>
@@ -43,6 +43,9 @@ public sealed class Regiment
     /// <summary>Index of the first soldier in SoldierStore.</summary>
     public int First;
     public int Cols, Rows;
+    // FIX(S02): use the order system's active spacing when computing soldier slots.
+    public FormationKind Formation { get; internal set; } = FormationKind.Line;
+    internal float SlotSpacing => Def.Spacing * (Formation == FormationKind.Loose ? RegimentOrders.LooseSpacing : 1f);
     /// <summary>Live stats (replaced by Battle.ApplyDefs, C7).</summary>
     public UnitDef Def;
     /// <summary>Regiment this one is heading for, -1 = none.</summary>
@@ -57,7 +60,7 @@ public sealed class Regiment
     {
         int col = local % Cols;
         int row = local / Cols;
-        float s = Def.Spacing;
+        float s = SlotSpacing;
         float x = (col - (Cols - 1) * 0.5f) * s;
         return Centre + Right * x - Facing * (row * s);
     }
