@@ -8,4 +8,14 @@
     <!-- Optimise even Debug builds so perf numbers are representative -->
     <Optimize>true</Optimize>
   </PropertyGroup>
+  <!-- WHY: the sim and its tests are separate projects; keep their sources out of the Godot assembly. -->
+  <ItemGroup>
+    <Compile Remove="src/Sim/**" />
+    <Compile Remove="tests/**" />
+    <None Remove="src/Sim/**" />
+    <None Remove="tests/**" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="src/Sim/FOMS.Sim.csproj" />
+  </ItemGroup>
 </Project>

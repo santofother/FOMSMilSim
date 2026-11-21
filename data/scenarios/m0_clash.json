@@ -1,0 +1,237 @@
+{
+  "id": "m0_clash",
+  "name": "M0 clash: 20 x 100 spearmen",
+  "seed": 1,
+  "sides": [
+    {
+      "name": "Blue",
+      "regiments": [
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -60.4,
+            -50.0
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -30.2,
+            -50.0
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            0.0,
+            -50.0
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            30.2,
+            -50.0
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            60.4,
+            -50.0
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -60.4,
+            -75.5
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -30.2,
+            -75.5
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            0.0,
+            -75.5
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            30.2,
+            -75.5
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            60.4,
+            -75.5
+          ],
+          "facing": [
+            0,
+            1
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Red",
+      "regiments": [
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -60.4,
+            50.0
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -30.2,
+            50.0
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            0.0,
+            50.0
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            30.2,
+            50.0
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            60.4,
+            50.0
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -60.4,
+            75.5
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            -30.2,
+            75.5
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            0.0,
+            75.5
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            30.2,
+            75.5
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        },
+        {
+          "unit": "gb_spearmen",
+          "position": [
+            60.4,
+            75.5
+          ],
+          "facing": [
+            0,
+            -1
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -3,3 +3,9 @@ bin/
 obj/
 *.user
 .DS_Store
+perf_results/*.png
+tests/**/bin
+tests/**/obj
+src/Sim/bin
+src/Sim/obj
+perf_results/*.import

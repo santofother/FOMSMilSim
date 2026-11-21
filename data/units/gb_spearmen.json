@@ -1,0 +1,19 @@
+{
+  "id": "gb_spearmen",
+  "name": "Spearmen",
+  "model": "infantry",
+  "soldiers": 100,
+  "hp": 100,
+  "melee_hit_chance": 0.4,
+  "weapon_damage": 15,
+  "weapon_damage_random": 15,
+  "attack_interval": 1.2,
+  "attack_interval_random": 0.6,
+  "reach": 1.3,
+  "speed": 2.2,
+  "charge_speed": 3.6,
+  "run_speed": 4.0,
+  "rout_speed": 5.0,
+  "rout_threshold": 0.45,
+  "spacing": 1.1
+}
