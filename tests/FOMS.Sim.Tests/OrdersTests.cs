@@ -15,15 +15,15 @@ public class OrdersTests
         var reg = battle.Regiments[0];
         var destination = new Vector2(8f, 0f);
         var facing = -Vector2.UnitY;
-        var firstSoldier = battle.Soldiers.Pos[reg.First];
 
         battle.Issue(new Move(0, destination, facing * 2f, 4.4f, Run: false));
         battle.Step();
 
+        // FIX(S04b): S02 asserted the old stand-still pivot here. Now a big turn faces about at once (no spinning
+        // block) and the regiment starts walking on the first tick.
         Assert.Equal(RegimentActivity.Moving, reg.Activity);
-        Assert.Equal(Vector2.Zero, reg.Centre);
-        Assert.InRange(Vector2.Distance(Vector2.UnitY, reg.Facing), 0.001f, 0.1f);
-        Assert.InRange(Vector2.Distance(firstSoldier, battle.Soldiers.Pos[reg.First]), 0f, 0.1f);
+        Assert.NotEqual(Vector2.Zero, reg.Centre);
+        Assert.InRange(Vector2.Distance(facing, reg.Facing), 0f, 0.001f);
         Assert.Equal(4, reg.Cols);
         Assert.Equal(3, reg.Rows);
 
@@ -32,8 +32,14 @@ public class OrdersTests
         Assert.InRange(Vector2.Distance(destination, reg.Centre), 0f, 0.01f);
         Assert.InRange(Vector2.Distance(facing, reg.Facing), 0f, 0.001f);
         Assert.Equal(4.4f, reg.Width, 3);
-        for (int i = 0; i < reg.Count; i++)
-            Assert.InRange(Vector2.Distance(reg.Slot(i), battle.Soldiers.Pos[reg.First + i]), 0f, 0.25f);
+        // FIX(S04b): men re-form by position, so check every slot is filled rather than soldier i in slot i.
+        for (int k = 0; k < reg.Count; k++)
+        {
+            float nearest = float.MaxValue;
+            for (int i = reg.First; i < reg.First + reg.Count; i++)
+                nearest = MathF.Min(nearest, Vector2.Distance(reg.Slot(k), battle.Soldiers.Pos[i]));
+            Assert.InRange(nearest, 0f, 0.25f);
+        }
     }
 
     [Theory]

@@ -13,6 +13,9 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
     const float TravelFacingTolerance = 0.15f;
     const float MaxTurnRate = MathF.PI / 2f;
 
+    /// <summary>S04b: a Move order that has arrived holds its ground (pushes and follow-ups don't get walked back).</summary>
+    readonly bool[] _arrived = new bool[regiments.Length];
+
     public bool Apply(Order order)
     {
         var reg = regiments[order.RegimentId];
@@ -37,6 +40,7 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
 
         reg.Order = order;
         reg.TargetRegiment = -1;
+        _arrived[reg.Id] = false;
         return true;
     }
 
@@ -83,21 +87,15 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
         reg.Width = reg.Cols * reg.SlotSpacing;
     }
 
+    // S04b: wheel on the march, face about for big turns, walk straight into the final formation.
     void MoveTo(Regiment reg, Move move, float dt)
     {
-        var delta = move.FrontCentre - reg.Centre;
-        var facing = Vector2.Normalize(move.Facing);
-        float pace = Pace(reg);
+        if (_arrived[reg.Id]) { reg.Activity = RegimentActivity.Idle; return; }
         reg.Activity = RegimentActivity.Moving;
-        if (delta != Vector2.Zero)
-        {
-            float distance = delta.Length();
-            var direction = delta / distance;
-            if (TurnTowards(reg, direction, pace, dt) <= TravelFacingTolerance)
-                Advance(reg, distance <= pace * dt ? move.FrontCentre : reg.Centre + direction * (pace * dt));
-        }
-        else if (TurnTowards(reg, facing, pace, dt) == 0f)
-            reg.Activity = RegimentActivity.Idle;
+        var facing = Vector2.Normalize(move.Facing);
+        if (!FormationSteering.Approach(reg, move.FrontCentre, facing, Pace(reg), dt, terrain)) return;
+        _arrived[reg.Id] = true;
+        reg.Activity = RegimentActivity.Idle;
     }
 
     void CloseWith(Regiment reg, Regiment enemy, float dt)
@@ -122,6 +120,13 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
         if (gap <= 1e-4f) return;
 
         var direction = delta / gap;
+        if (reg.Activity == RegimentActivity.Engaging)
+        {
+            // S04b: approach like a Move (wheel / face about), ending at reach, facing the contact point.
+            FormationSteering.Approach(reg, reg.Centre + direction * distanceToContact, direction, pace, dt, terrain);
+            return;
+        }
+        // In contact: only small turns about the front, so the fighting rank stays where it is.
         if (TurnTowards(reg, direction, pace, dt) <= TravelFacingTolerance && distanceToContact > 0f)
             Advance(reg, reg.Centre + direction * MathF.Min(pace * dt, distanceToContact));
     }

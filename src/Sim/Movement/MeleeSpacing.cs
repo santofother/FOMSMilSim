@@ -27,12 +27,16 @@ internal sealed class MeleeSpacing
     /// <summary>An attacker whose front men mostly can't reach closes up at this fraction of its pace.</summary>
     const float FollowUpPace = 0.5f, FollowUpMinGap = 0.25f;
     const uint SaltRetarget = 113, SaltJitter = 127;
+    /// <summary>S04b: a man this far from his slot hurries (outer flank of a wheel, re-forming), up to run speed.</summary>
+    const float HurryFrom = 1.5f, HurryFactor = 1.8f;
 
     readonly Battle _b;
     readonly SpatialGrid _grid;
     bool[] _alive = Array.Empty<bool>();
     /// <summary>Formation slot per soldier after the column fill, indexed by soldier.</summary>
     int[] _slot = Array.Empty<int>();
+    /// <summary>S04b: who holds which home slot (re-assigned when a regiment faces about or changes frontage).</summary>
+    readonly FormationSlots _homes = new();
 
     public MeleeSpacing(Battle battle, SpatialGrid grid)
     {
@@ -49,16 +53,19 @@ internal sealed class MeleeSpacing
         _alive = aliveSnapshot;
         var s = _b.Soldiers;
         if (_slot.Length < s.Count) Array.Resize(ref _slot, s.Count);
+        _homes.Update(_b.Regiments, s, aliveSnapshot);
+        var holder = _homes.Holder;
         foreach (var reg in _b.Regiments)
         {
             int cols = Math.Max(1, reg.Cols);
             for (int c = 0; c < cols && c < reg.Count; c++)
             {
                 int row = 0;
-                for (int k = c; k < reg.Count; k += cols)
+                for (int h = c; h < reg.Count; h += cols)
                 {
+                    int k = holder[reg.First + h];
                     int i = reg.First + k;
-                    if (!aliveSnapshot[i]) { _slot[i] = k; continue; }
+                    if (!aliveSnapshot[i]) { _slot[i] = h; continue; }
                     _slot[i] = row * cols + c;
                     row++;
                 }
@@ -95,7 +102,7 @@ internal sealed class MeleeSpacing
     public Vector2 Desired(int i, Regiment reg, Vector2 p, int t, float pace)
     {
         var slot = reg.Slot(_slot[i]);
-        if (t < 0) return Toward(p, slot, pace);
+        if (t < 0) return Toward(p, slot, Hurry(reg, p, slot, pace));
 
         var d = _b.Soldiers.Pos[t] - p;
         float dist = d.Length();
@@ -109,6 +116,11 @@ internal sealed class MeleeSpacing
         if (ol > leash) want = slot + off * (leash / ol);
         return Toward(p, want, pace);
     }
+
+    static float Hurry(Regiment reg, Vector2 p, Vector2 slot, float pace)
+        => Vector2.DistanceSquared(p, slot) > HurryFrom * HurryFrom
+            ? MathF.Max(pace, MathF.Min(reg.Def.RunSpeed * FatigueRules.SpeedMul(reg.Fatigue), pace * HurryFactor))
+            : pace;
 
     static Vector2 Toward(Vector2 p, Vector2 target, float pace)
     {
@@ -186,8 +198,8 @@ internal sealed class MeleeSpacing
 
     /// <summary>
     /// Sequential, end of tick: a regiment locked in melee with a lighter one drives it back along its own
-    /// facing and follows it. Equal masses (after fatigue) don't move. Regiments holding a Move order aren't
-    /// displaced (the order would walk them straight back), so pushing them does nothing.
+    /// facing and follows it. Equal masses (after fatigue) don't move. Regiments still walking a Move order aren't
+    /// displaced (the order would walk them straight back); once arrived they hold and can be pushed.
     /// </summary>
     public void Push(int[] contact, int[] opponent, float dt)
     {
@@ -233,5 +245,7 @@ internal sealed class MeleeSpacing
         }
     }
 
-    static bool Pushable(Regiment r) => !r.Routing && r.Order is not Move and not Withdraw;
+    // S04b: a Move order that has arrived holds its ground, so it can be pushed and follow up like a halted one.
+    static bool Pushable(Regiment r) => !r.Routing && r.Order is not Withdraw
+                                        && !(r.Order is Move && r.Activity == RegimentActivity.Moving);
 }
