@@ -3,6 +3,8 @@ card: S06
 title: Charges & cavalry
 phase: A
 agent: Either
+preferred: Codex GPT-6 Astra · medium
+alternative: Claude Opus 5.5 · high
 tier: T1
 depends: [S04, S05]
 parallel: [S07, S08]
@@ -11,6 +13,15 @@ owns: [src/Sim/Combat/Charge*, src/Sim/Movement/Cavalry*, src/Game/View/Cavalry*
 read: [docs/ARCHITECTURE.md §C4 §C6 §C9, docs/GameDesign.md §2 §3.3 (Charges), handoffs S04 S05]
 ---
 # S06 — Charges & cavalry
+
+## Start this session
+- **Preferred:** Codex GPT-6 Astra · medium
+- **Or:** Claude Opus 5.5 · high
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S06-charges-cavalry.md, plus only the files and handoffs the card lists under read:. Build the card on branch s06-cavalry, run tools/run_tests.sh, write docs/handoffs/S06.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** a cavalry charge into a flank is the most satisfying thing in the game, and charging braced pikes
 head-on is a disaster.

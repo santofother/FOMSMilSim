@@ -3,6 +3,8 @@ card: S03
 title: Selection & orders UI
 phase: A
 agent: Either
+preferred: Claude Sonnet 5.5 · medium
+alternative: Codex GPT-6.1 Sol · medium
 tier: T3
 depends: [S01]
 parallel: [S02]
@@ -11,6 +13,15 @@ owns: [src/Game/Input/**, src/Game/UI/Hud/**, src/Game/View/Markers*, shaders/ma
 read: [docs/ARCHITECTURE.md §C1 §C4b §C5, docs/GameDesign.md §8, handoff S01]
 ---
 # S03 — Selection & orders UI
+
+## Start this session
+- **Preferred:** Claude Sonnet 5.5 · medium
+- **Or:** Codex GPT-6.1 Sol · medium
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S03-selection-ui.md, plus only the files and handoffs the card lists under read:. Build the card on branch s03-selection-ui, run tools/run_tests.sh, write docs/handoffs/S03.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** you can command regiments the way Total War does. This card only issues orders; S02 makes the sim obey.
 

@@ -3,6 +3,8 @@ card: S09
 title: Grey-box skirmish scenario + battle flow
 phase: A
 agent: Either
+preferred: Codex GPT-6.1 Sol · high
+alternative: Claude Opus 5.5 · medium
 tier: T3
 depends: [S03, S05, S06, S07]
 parallel: []
@@ -11,6 +13,15 @@ owns: [data/scenarios/skirmish_*.json, src/Sim/AI/SimpleAI*, src/Game/Battle/Flo
 read: [docs/ARCHITECTURE.md §C1 §C5, docs/GameDesign.md §3.6 §7, handoffs S02 S03 S05 S06 S07]
 ---
 # S09 — Grey-box skirmish + battle flow
+
+## Start this session
+- **Preferred:** Codex GPT-6.1 Sol · high
+- **Or:** Claude Opus 5.5 · medium
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S09-skirmish.md, plus only the files and handoffs the card lists under read:. Build the card on branch s09-skirmish, run tools/run_tests.sh, write docs/handoffs/S09.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** a complete, replayable small battle: the thing we'll judge at P1.
 

@@ -3,6 +3,8 @@ card: S01
 title: Foundation (sim/game split, battle scene, tests)
 phase: 0
 agent: Claude
+preferred: Claude Opus 5.5 · medium
+alternative: Codex GPT-6 Astra · low
 tier: T2
 depends: []
 parallel: []
@@ -11,6 +13,15 @@ owns: [src/Sim/**, src/Game/**, tests/**, data/**, scenes/Battle.tscn, FOMSBattl
 read: [docs/ARCHITECTURE.md, docs/ref/commands.md, docs/ref/conventions.md, src/PerfTest/BattleSim.cs, src/PerfTest/PerfTest.cs]
 ---
 # S01 — Foundation
+
+## Start this session
+- **Preferred:** Claude Opus 5.5 · medium
+- **Or:** Codex GPT-6 Astra · low
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S01-foundation.md, plus only the files and handoffs the card lists under read:. Build the card on branch s01-foundation, run tools/run_tests.sh, write docs/handoffs/S01.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** the project structure from ARCHITECTURE.md §2 exists and works end to end, using the M0 armies.
 

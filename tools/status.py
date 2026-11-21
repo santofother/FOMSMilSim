@@ -82,10 +82,10 @@ def main() -> None:
         note = h.get("date", "")
         if h.get("branch"):
             note = f"{note} {h['branch']}".strip()
-        rows.append((c.get("phase", ""), cid, c.get("title", ""), st, c.get("agent", ""), c.get("tier", ""),
+        rows.append((c.get("phase", ""), cid, c.get("title", ""), st, c.get("preferred", c.get("agent", "")), c.get("tier", ""),
                      ", ".join(c.get("depends", [])) or "-", ", ".join(c.get("parallel", [])) or "-", note))
 
-    lines = ["| Phase | Card | Title | Status | Agent | Tier | Needs | Runs with | Done |",
+    lines = ["| Phase | Card | Title | Status | Preferred model | Tier | Needs | Runs with | Done |",
              "|---|---|---|---|---|---|---|---|---|"]
     lines += ["| " + " | ".join(r) + " |" for r in rows]
     if extras:

@@ -3,6 +3,8 @@ card: S04
 title: Melee v2 + fatigue
 phase: A
 agent: Either
+preferred: Claude Opus 5.5 · high
+alternative: Codex GPT-6 Astra · medium
 tier: T1
 depends: [S02]
 parallel: [S08]
@@ -11,6 +13,15 @@ owns: [src/Sim/Combat/Melee*, src/Sim/Movement/**, tests/FOMS.Sim.Tests/Melee*, 
 read: [docs/ARCHITECTURE.md §C3 §C4 §C6 §C7, docs/GameDesign.md §1 §3.1 §3.3, handoffs S01 S02]
 ---
 # S04 — Melee v2 + fatigue
+
+## Start this session
+- **Preferred:** Claude Opus 5.5 · high
+- **Or:** Codex GPT-6 Astra · medium
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S04-melee.md, plus only the files and handoffs the card lists under read:. Build the card on branch s04-melee, run tools/run_tests.sh, write docs/handoffs/S04.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** melee is decided by stats and position, and fights *look* like two lines grinding, not one blob.
 

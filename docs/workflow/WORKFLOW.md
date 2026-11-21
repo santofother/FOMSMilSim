@@ -22,7 +22,8 @@ fix session instead. Long sessions are where tokens go.
 
 ## Prompts (copy, paste, replace the `<…>`)
 
-**Builder** (new worktree; any agent):
+**Builder:** use the **Start this session** box at the top of the card. It has the model, the effort, and the
+exact prompt, ready to paste. The general form, for cards written later without a box (new worktree; any agent):
 ```text
 You're a builder on FOMS Battle Simulator. Read AGENTS.md, then do card docs/sessions/<S02-orders-sim>.md on branch <s02-orders-sim>. Follow the card's owns list, run the tests, write the handoff, and land it on main yourself following AGENTS.md step 7, without asking me. Only stop to ask if you're blocked.
 ```

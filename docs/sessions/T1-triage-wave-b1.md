@@ -3,6 +3,8 @@ card: T1
 title: Triage after P1 → wave B1 cards
 phase: A
 agent: Claude
+preferred: Claude Opus 5.5 · medium
+alternative: Codex GPT-6.1 Sol · high
 tier: T2
 depends: [P1]
 parallel: []
@@ -11,6 +13,15 @@ owns: [docs/sessions/**, docs/PLAN.md, docs/GameDesign.md, docs/ARCHITECTURE.md,
 read: [docs/PLAN.md, docs/playtests/P1.md, docs/playtests/notes.md, the "Known issues" sections of all handoffs]
 ---
 # T1 — Triage after P1 (head engineer)
+
+## Start this session
+- **Preferred:** Claude Opus 5.5 · medium
+- **Or:** Codex GPT-6.1 Sol · high
+- Run it in the repo folder itself (no worktree). Paste:
+
+```text
+Read AGENTS.md and CLAUDE.md (repo root), then docs/sessions/T1-triage-wave-b1.md. You're head engineer: do this triage card exactly as written, reading only the files it lists. Show me the new wave before you commit.
+```
 
 **Goal:** turn the playtest into the next wave.
 

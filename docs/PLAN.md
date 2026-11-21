@@ -22,24 +22,27 @@ boxes first, while changes are cheap. Content (factions, sieges, Corivessa, art)
 **Why only Phase 0–A has detailed cards:** later cards get written in triage sessions after each playtest,
 because playtests always change the plan. Writing them now would waste tokens on work that will be thrown away.
 
+Every card's **Start this session** box has the exact model, effort and prompt to paste.
+Parallel pairs use different vendors on purpose, so both subscriptions work at the same time.
+
 ## Phase 0 — Foundation
-| Card | What you get | Agent |
+| Card | What you get | Model to use |
 |---|---|---|
-| **S01** Foundation | Code split into the pure sim, the Godot game and tests; a battle scene that runs the M0 armies; test runner and status board working | Claude |
+| **S01** Foundation | Code split into the pure sim, the Godot game and tests; a battle scene that runs the M0 armies; test runner and status board working | Claude Opus 5.5 · medium *(or Codex GPT-6 Astra · low)* |
 
 **Your checkpoint:** read `docs/ARCHITECTURE.md` §1–3 (2 pages). It's the last cheap moment to change direction.
 
 ## Phase A — Core combat (grey boxes)
-| Card | What you get | Agent | Can run alongside |
+| Card | What you get | Model to use | Can run alongside |
 |---|---|---|---|
-| **S02** Orders & data (sim side) | Unit stats from JSON; regiments obey move, attack, halt and formation orders | Either | S03 |
-| **S03** Selection & orders UI | Click and box-select, right-click to move or attack, drag to set line width and facing, regiment cards bar | Either | S02 |
-| **S04** Melee v2 + fatigue | Combat driven by stats (attack, defence, armour, armour-piercing, shields), flanking bonuses, regiments that tire | Claude or Codex Astra | S08 |
-| **S05** Morale, routing, general | Wavering, breaking, routing, rallying; a general with a Rally order | Either | S08 |
-| **S06** Charges & cavalry | Cavalry, charge impact and knockdowns, braced spears and pikes that stop horses | Claude or Codex Astra | S07, S08 |
-| **S07** Missiles | Bows, slings, crossbows, javelins; arcs, ammo, shields that block from the front | Either | S06, S08 |
-| **S08** Tuning panel | Press F2 to change any unit stat while the game runs; saves to JSON | Either | S04–S07 |
-| **S09** Skirmish scenario | A 6v6 grey-box battle on the plains with deployment, a simple enemy, and a win/lose screen | Either | — |
+| **S02** Orders & data (sim side) | Unit stats from JSON; regiments obey move, attack, halt and formation orders | Codex GPT-6.1 Sol · high *(or Claude Opus 5.5 · medium)* | S03 |
+| **S03** Selection & orders UI | Click and box-select, right-click to move or attack, drag to set line width and facing, regiment cards bar | Claude Sonnet 5.5 · medium *(or Codex GPT-6.1 Sol · medium)* | S02 |
+| **S04** Melee v2 + fatigue | Combat driven by stats (attack, defence, armour, armour-piercing, shields), flanking bonuses, regiments that tire | Claude Opus 5.5 · high *(or Codex GPT-6 Astra · medium)* | S08 |
+| **S05** Morale, routing, general | Wavering, breaking, routing, rallying; a general with a Rally order | Codex GPT-6.1 Sol · high *(or Claude Opus 5.5 · medium)* | S08 |
+| **S06** Charges & cavalry | Cavalry, charge impact and knockdowns, braced spears and pikes that stop horses | Codex GPT-6 Astra · medium *(or Claude Opus 5.5 · high)* | S07, S08 |
+| **S07** Missiles | Bows, slings, crossbows, javelins; arcs, ammo, shields that block from the front | Claude Opus 5.5 · medium *(or Codex GPT-6.1 Sol · high)* | S06, S08 |
+| **S08** Tuning panel | Press F2 to change any unit stat while the game runs; saves to JSON | Codex GPT-6.1 Sol · medium *(or Claude Sonnet 5.5 · medium)* | S04–S07 |
+| **S09** Skirmish scenario | A 6v6 grey-box battle on the plains with deployment, a simple enemy, and a win/lose screen | Codex GPT-6.1 Sol · high *(or Claude Opus 5.5 · medium)* | — |
 
 Suggested order: S01 → (S02 ‖ S03) → S04 → S05 → (S06 ‖ S07) → S09. S08 can run alongside any of S04–S07.
 

@@ -3,6 +3,8 @@ card: S07
 title: Missiles (bows, slings, crossbows, javelins)
 phase: A
 agent: Either
+preferred: Claude Opus 5.5 · medium
+alternative: Codex GPT-6.1 Sol · high
 tier: T2
 depends: [S04, S05]
 parallel: [S06, S08]
@@ -11,6 +13,15 @@ owns: [src/Sim/Combat/Ranged*, src/Game/View/Projectile*, shaders/projectile*, t
 read: [docs/ARCHITECTURE.md §C3 §C4b §C6, docs/GameDesign.md §2 §3.3 (Missiles), handoffs S04 S05]
 ---
 # S07 — Missiles
+
+## Start this session
+- **Preferred:** Claude Opus 5.5 · medium
+- **Or:** Codex GPT-6.1 Sol · high
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S07-missiles.md, plus only the files and handoffs the card lists under read:. Build the card on branch s07-missiles, run tools/run_tests.sh, write docs/handoffs/S07.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** archers matter: they thin a regiment before contact, shields visibly help, and ammo runs out.
 

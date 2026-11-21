@@ -3,6 +3,8 @@ card: S02
 title: Orders & data (sim side)
 phase: A
 agent: Either
+preferred: Codex GPT-6.1 Sol · high
+alternative: Claude Opus 5.5 · medium
 tier: T2
 depends: [S01]
 parallel: [S03]
@@ -11,6 +13,15 @@ owns: [src/Sim/Orders/**, src/Sim/Data/**, data/units/**, data/scenarios/**, tes
 read: [docs/ARCHITECTURE.md §C1 §C3 §C4 §C4b §C5 §C7, docs/GameDesign.md §3.1 §3.2, handoff S01]
 ---
 # S02 — Orders & data (sim side)
+
+## Start this session
+- **Preferred:** Codex GPT-6.1 Sol · high
+- **Or:** Claude Opus 5.5 · medium
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S02-orders-sim.md, plus only the files and handoffs the card lists under read:. Build the card on branch s02-orders-sim, run tools/run_tests.sh, write docs/handoffs/S02.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** regiments do exactly what they're ordered, and every unit number comes from JSON.
 

@@ -3,6 +3,8 @@ card: S05
 title: Morale, routing, rallying, the general
 phase: A
 agent: Either
+preferred: Codex GPT-6.1 Sol · high
+alternative: Claude Opus 5.5 · medium
 tier: T2
 depends: [S04]
 parallel: [S08]
@@ -11,6 +13,15 @@ owns: [src/Sim/Morale/**, tests/FOMS.Sim.Tests/Morale*, tests/FOMS.Sim.Tests/Bal
 read: [docs/ARCHITECTURE.md §C4b §C5 §C6, docs/GameDesign.md §1 §3.4 §3.5, handoffs S02 S04]
 ---
 # S05 — Morale, routing, rallying, the general
+
+## Start this session
+- **Preferred:** Codex GPT-6.1 Sol · high
+- **Or:** Claude Opus 5.5 · medium
+- Start it in a **new worktree**. Paste:
+
+```text
+Read AGENTS.md (repo root) and docs/sessions/S05-morale.md, plus only the files and handoffs the card lists under read:. Build the card on branch s05-morale, run tools/run_tests.sh, write docs/handoffs/S05.md, and land it on main yourself following AGENTS.md step 7. Only stop to ask me if you're blocked.
+```
 
 **Goal:** regiments break for reasons you can understand, and that's how most battles end.
 
