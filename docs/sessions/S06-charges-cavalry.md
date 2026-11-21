@@ -6,7 +6,7 @@ agent: Either
 preferred: Codex GPT-6 Astra · medium
 alternative: Claude Opus 5.5 · high
 tier: T1
-depends: [S04, S05]
+depends: [S04, S04b, S05]
 parallel: [S07, S08]
 branch: s06-cavalry
 owns: [src/Sim/Combat/Charge*, src/Sim/Movement/Cavalry*, src/Game/View/Cavalry*, shaders/cavalry*, tests/FOMS.Sim.Tests/Charge*, tests/FOMS.Sim.Tests/Balance/Charge*]

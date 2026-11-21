@@ -38,13 +38,14 @@ Parallel pairs use different vendors on purpose, so both subscriptions work at t
 | **S02** Orders & data (sim side) | Unit stats from JSON; regiments obey move, attack, halt and formation orders | Codex GPT-6.1 Sol · high *(or Claude Opus 5.5 · medium)* | S03 |
 | **S03** Selection & orders UI | Click and box-select, right-click to move or attack, drag to set line width and facing, regiment cards bar | Claude Sonnet 5.5 · medium *(or Codex GPT-6.1 Sol · medium)* | S02 |
 | **S04** Melee v2 + fatigue | Combat driven by stats (attack, defence, armour, armour-piercing, shields), flanking bonuses, regiments that tire | Claude Opus 5.5 · high *(or Codex GPT-6 Astra · medium)* | S08 |
+| **S04b** Formation movement | Lines wheel while marching, face about and re-form instead of spinning on the spot *(added after the S03 playtest)* | Claude Opus 5.5 · high *(or Codex GPT-6 Astra · medium)* | S05, S08 |
 | **S05** Morale, routing, general | Wavering, breaking, routing, rallying; a general with a Rally order | Codex GPT-6.1 Sol · high *(or Claude Opus 5.5 · medium)* | S08 |
 | **S06** Charges & cavalry | Cavalry, charge impact and knockdowns, braced spears and pikes that stop horses | Codex GPT-6 Astra · medium *(or Claude Opus 5.5 · high)* | S07, S08 |
 | **S07** Missiles | Bows, slings, crossbows, javelins; arcs, ammo, shields that block from the front | Claude Opus 5.5 · medium *(or Codex GPT-6.1 Sol · high)* | S06, S08 |
 | **S08** Tuning panel | Press F2 to change any unit stat while the game runs; saves to JSON | Codex GPT-6.1 Sol · medium *(or Claude Sonnet 5.5 · medium)* | S04–S07 |
 | **S09** Skirmish scenario | A 6v6 grey-box battle on the plains with deployment, a simple enemy, and a win/lose screen | Codex GPT-6.1 Sol · high *(or Claude Opus 5.5 · medium)* | — |
 
-Suggested order: S01 → (S02 ‖ S03) → S04 → S05 → (S06 ‖ S07) → S09. S08 can run alongside any of S04–S07.
+Suggested order: S01 → (S02 ‖ S03) → S04 → (S04b ‖ S05) → (S06 ‖ S07) → S09. S08 can run alongside any of S04–S07.
 
 **After each card:** play the build for 5 minutes (the handoff ends with a 3-line "what to check").
 Write anything that feels wrong in `docs/playtests/notes.md`, one line each. Don't fix things mid-phase
