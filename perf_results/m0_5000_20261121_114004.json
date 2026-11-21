@@ -1,0 +1,23 @@
+{
+  "soldiers": 5000,
+  "regiments": 20,
+  "tris_per_soldier": 1014,
+  "duration_s": 90,
+  "frames": 9743,
+  "avg_fps": 108.2,
+  "one_percent_low_fps": 80.7,
+  "avg_frame_ms": 9.24,
+  "worst_frame_ms": 36.92,
+  "avg_sim_ms_per_tick": 1.426,
+  "max_sim_ms_per_tick": 39.248,
+  "sim_hz": 30,
+  "avg_upload_ms": 0.461,
+  "avg_alive": 3662,
+  "min_alive": 2249,
+  "window": "1600x900",
+  "screen_scale": 2,
+  "renderer": "Apple M1 Pro (Apple7)",
+  "godot": "4.7.2-stable (official)",
+  "cpu_threads": 10,
+  "timestamp": "2026-11-21T11:40:04"
+}
