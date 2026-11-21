@@ -51,7 +51,8 @@ public partial class RtsCamera : Node3D
         {
             if (mb.ButtonIndex == MouseButton.WheelUp && mb.Pressed) Distance = Mathf.Max(8f, Distance * 0.9f);
             if (mb.ButtonIndex == MouseButton.WheelDown && mb.Pressed) Distance = Mathf.Min(600f, Distance * 1.1f);
-            if (mb.ButtonIndex is MouseButton.Right or MouseButton.Middle) _dragging = mb.Pressed;
+            // FIX(S03): right button is now the order button; only middle-drag rotates.
+            if (mb.ButtonIndex is MouseButton.Middle) _dragging = mb.Pressed;
         }
         else if (e is InputEventMouseMotion mm && _dragging)
         {

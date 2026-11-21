@@ -1,0 +1,27 @@
+{
+  "id": "s03_sandbox",
+  "name": "S03 sandbox: order testing, nobody attacks on their own",
+  "seed": 3,
+  "sides": [
+    {
+      "name": "Blue",
+      "auto_attack": false,
+      "regiments": [
+        { "unit": "gb_spearmen", "position": [-60, -60], "facing": [0, 1] },
+        { "unit": "gb_spearmen", "position": [-30, -60], "facing": [0, 1] },
+        { "unit": "gb_swordsmen", "position": [0, -60], "facing": [0, 1] },
+        { "unit": "gb_archers", "position": [30, -60], "facing": [0, 1] },
+        { "unit": "gb_light_cav", "position": [60, -60], "facing": [0, 1] }
+      ]
+    },
+    {
+      "name": "Red",
+      "auto_attack": false,
+      "regiments": [
+        { "unit": "gb_spearmen", "position": [-45, 40], "facing": [0, -1] },
+        { "unit": "gb_swordsmen", "position": [0, 40], "facing": [0, -1] },
+        { "unit": "gb_pikemen", "position": [45, 40], "facing": [0, -1] }
+      ]
+    }
+  ]
+}

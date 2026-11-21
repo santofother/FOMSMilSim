@@ -1,13 +1,15 @@
 // BattleScene: loads a scenario, steps the sim at a fixed tick (C2), interpolates, draws, HUD.
 // Owner: S01
 // Command line (after "--"): --scenario=<id> (default m0_clash)  --quit-after=SEC  --shots=10,25
-// Keys: R restart, Space pause, Esc quit. Camera: WASD/QE/wheel/RMB.
+// Keys: R restart (Space pause, +/- speed live in BattleInput, S03). Camera: WASD/QE/wheel/MMB.
 // Public API: BattleScene.Battle (current sim, read-only use, C1)
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Godot;
 using FOMS.Game.Camera;
+using FOMS.Game.PlayerInput;
+using FOMS.Game.UI.Hud;
 using FOMS.Game.View;
 using FOMS.Sim.Data;
 using SimBattle = FOMS.Sim.Battle;
@@ -30,7 +32,9 @@ public partial class BattleScene : Node3D
     Label _hud;
     float _acc, _clock, _restartTimer = -1f, _hudTimer;
     int _frames;
-    bool _paused;
+    // FIX(S03): pause and speed are public so BattleInput can drive them.
+    public bool Paused;
+    public float Speed = 1f;
 
     public override void _Ready()
     {
@@ -39,6 +43,11 @@ public partial class BattleScene : Node3D
         _renderer = new SoldierRenderer { Name = "SoldierRenderer" };
         AddChild(_renderer);
         AddChild(new RtsCamera { Name = "RtsCamera" });
+        // FIX(S03): selection, markers and cards bar.
+        var input = new BattleInput(this);
+        AddChild(input);
+        AddChild(new Markers(this, input));
+        AddChild(new CardsBar(this, input));
 
         var layer = new CanvasLayer();
         AddChild(layer);
@@ -83,9 +92,9 @@ public partial class BattleScene : Node3D
     public override void _Process(double delta)
     {
         float dt = (float)delta;
-        if (!_paused)
+        if (!Paused)
         {
-            _acc += dt;
+            _acc += dt * Speed;
             int steps = 0;
             while (_acc >= SimBattle.TickDt && steps < MaxTicksPerFrame)
             {
@@ -133,7 +142,8 @@ public partial class BattleScene : Node3D
             $"FOMS Battle — {_scenarioId}   FPS {fps:0}\n" +
             $"Time {Battle.Time:0}s   Blue {Battle.AlivePerTeam[0]}  Red {Battle.AlivePerTeam[1]}\n" +
             $"{status}\n" +
-            "[R] restart  [Space] pause  WASD/QE/wheel/RMB camera";
+            $"{(Paused ? "PAUSED  " : "")}Speed {Speed:0.0}x   [R] restart  [Space] pause  [+/-] speed  WASD/QE/wheel/MMB camera\n" +
+            "LMB select  RMB move / drag line / attack  H halt  Backspace withdraw  Ctrl+1-9 groups";
         _hudTimer = 0; _frames = 0;
     }
 
@@ -166,8 +176,6 @@ public partial class BattleScene : Node3D
         switch (k.Keycode)
         {
             case Key.R: StartBattle(); break;
-            case Key.Space: _paused = !_paused; break;
-            case Key.Escape: GetTree().Quit(); break;
         }
     }
 }
