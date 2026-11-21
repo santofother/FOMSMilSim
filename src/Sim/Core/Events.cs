@@ -12,6 +12,11 @@ public enum EventKind
     SoldierKilled,
     /// <summary>Regiment = the routing regiment, Pos = its centre.</summary>
     RegimentRouted,
+    /// <summary>
+    /// A landed melee blow (S04). Soldier = attacker, Regiment = attacker's regiment, Other = victim,
+    /// Pos = victim position. MeleeRules.Killed(battle, e) tells whether it killed (valid until the next Step).
+    /// </summary>
+    MeleeHit,
     // TODO(S06): ChargeImpact. TODO(S07): ProjectileFired. TODO(S05): RegimentRallied.
 }
 

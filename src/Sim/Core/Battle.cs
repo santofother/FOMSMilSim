@@ -18,8 +18,6 @@ public sealed class Battle
     /// <summary>CONTRACT (C2): every Step advances exactly this many seconds.</summary>
     public const float TickDt = 1f / 30f;
 
-    const float SearchRadius = 8f;
-    const float SeparationRadius = 0.75f;
     const float MapRadius = 170f;
 
     public readonly uint Seed;
@@ -47,12 +45,17 @@ public sealed class Battle
     readonly SpatialGrid _grid = new();
     bool[] _aliveSnap = Array.Empty<bool>();
     readonly Action<int> _updateSoldier;
+    // FIX(S04): melee duels (Combat/Melee.cs) and melee spacing (Movement/MeleeSpacing.cs) plug into the tick.
+    readonly MeleeSystem _melee;
+    readonly MeleeSpacing _spacing;
 
     public Battle(ScenarioDef scenario, IReadOnlyDictionary<string, UnitDef> units, ITerrain terrain = null)
     {
         Seed = scenario.Seed;
         Terrain = terrain ?? new FlatTerrain();
         _updateSoldier = UpdateSoldier;
+        _melee = new MeleeSystem(this);
+        _spacing = new MeleeSpacing(this, _grid);
 
         var regs = new List<Regiment>();
         for (int team = 0; team < scenario.Sides.Count; team++)
@@ -137,6 +140,8 @@ public sealed class Battle
         if (_aliveSnap.Length < n) _aliveSnap = new bool[n];
         for (int i = 0; i < n; i++) _aliveSnap[i] = s.IsAlive(i);
         _grid.Build(s, _aliveSnap);
+        _spacing.BeginTick(_aliveSnap); // FIX(S04)
+        _melee.BeginTick(n); // FIX(S04)
 
         UpdateRouting();
         _orders.Step(dt);
@@ -145,6 +150,7 @@ public sealed class Battle
         // WHY: each soldier writes only its own slots; damage to others is an order-independent Interlocked.Add (C3).
         Parallel.For(0, n, _updateSoldier);
         s.SwapPositions();
+        _melee.EmitHits(Events); // FIX(S04)
 
         // Sequential phase: report local defensive melee and resolve deaths.
         for (int i = 0; i < n; i++)
@@ -162,7 +168,24 @@ public sealed class Battle
             AlivePerTeam[s.Team[i]]--;
             Events.Add(new BattleEvent(EventKind.SoldierKilled, i, reg.Id, -1, s.Pos[i]));
         }
+        EndMelee(dt); // FIX(S04)
         CheckVictory();
+    }
+
+    // FIX(S04): contact tally, pushing by mass and fatigue, once per tick after deaths.
+    void EndMelee(float dt)
+    {
+        _melee.TallyContact();
+        _spacing.Push(_melee.Contact, _melee.Opponent, dt);
+        _spacing.FollowUp(_melee.Contact, _melee.Reaching, _melee.Gap, _melee.EnemyFront, dt);
+        foreach (var reg in Regiments)
+        {
+            if (reg.Alive <= 0) continue;
+            bool moving = reg.Activity is RegimentActivity.Moving or RegimentActivity.Engaging;
+            bool running = reg.Routing
+                || (moving && RegimentOrders.Pace(reg) > reg.Def.Speed * FatigueRules.SpeedMul(reg.Fatigue) * 1.01f);
+            FatigueRules.Update(reg, _melee.Contact[reg.Id] > 0, running, moving, dt);
+        }
     }
 
     void ApplyOrders()
@@ -222,60 +245,33 @@ public sealed class Battle
         }
         else
         {
-            int t = -1;
-            bool pressingAttack = reg.Engaged && reg.TargetRegiment >= 0;
-            if (pressingAttack)
-            {
-                t = s.Target[i];
-                s.Retarget[i] -= dt;
-                // WHY: read the tick-start alive snapshot, not Hp, which other threads change mid-phase (C3).
-                if (t < 0 || !_aliveSnap[t] || s.RegimentId[t] != reg.TargetRegiment || s.Retarget[i] <= 0)
-                {
-                    t = FindNearestEnemy(i, p, SearchRadius, reg.TargetRegiment);
-                    s.Retarget[i] = 0.5f;
-                }
-            }
-            else if (reg.Activity == RegimentActivity.Idle && reg.Order is not Withdraw)
-            {
-                t = FindNearestEnemy(i, p, def.Reach);
-            }
+            // FIX(S04): melee v2. Soldiers keep their (column-filled) slots and only step up to the enemy on a
+            // leash; duels resolve by stats and the side the blow comes from.
+            bool melee = reg.Order is not Withdraw
+                         && reg.Activity is RegimentActivity.Idle or RegimentActivity.Fighting;
+            int t = _spacing.ChooseTarget(i, reg, p, melee, dt);
             s.Target[i] = t;
-
+            desired = _spacing.Desired(i, reg, p, t, RegimentOrders.Pace(reg));
             if (t >= 0)
             {
-                var d = s.Pos[t] - p;
-                float dist = d.Length();
                 faceTarget = t;
-                if (dist > def.Reach)
-                {
-                    desired = d / dist * RegimentOrders.Pace(reg);
-                }
+                float dist = Vector2.Distance(s.Pos[t], p);
+                if (dist > def.Reach) _melee.MarkGap(i, dist - def.Reach);
                 else
                 {
-                    desired = Vector2.Zero;
+                    _melee.MarkContact(i);
                     s.AttackCd[i] -= dt;
                     if (s.AttackCd[i] <= 0)
                     {
                         s.AttackCd[i] = def.AttackInterval + Rand(i, 11) * def.AttackIntervalRandom;
                         attacked = true;
-                        if (Rand(i, 13) < def.MeleeHitChance)
-                        {
-                            int dmg = def.WeaponDamage + (int)(Rand(i, 17) * def.WeaponDamageRandom);
-                            Interlocked.Add(ref s.Hp[t], -dmg);
-                        }
+                        _melee.Swing(i, t, reg);
                     }
                 }
             }
-            else
-            {
-                var delta = reg.Slot(i - reg.First) - p;
-                float len = delta.Length();
-                float speed = MathF.Min(len * 2f, RegimentOrders.Pace(reg));
-                desired = len > 0.22f ? delta / len * speed : Vector2.Zero;
-            }
         }
 
-        desired += Separation(i, p);
+        desired += _spacing.Separation(i, p); // FIX(S04)
 
         var v = Vector2.Lerp(s.Vel[i], desired, 1f - MathF.Exp(-8f * dt));
         // FIX(S02): soldiers also respect terrain while following their formation slots.
@@ -302,54 +298,6 @@ public sealed class Battle
             }
         }
         s.AnimPhase[i] += speedNow * dt * 3.2f;
-    }
-
-    Vector2 Separation(int i, Vector2 p)
-    {
-        var s = Soldiers;
-        Vector2 push = Vector2.Zero;
-        var sorted = _grid.Sorted;
-        SpatialGrid.CellCoords(p, out int cx, out int cz);
-        for (int z = cz - 1; z <= cz + 1; z++)
-        for (int x = cx - 1; x <= cx + 1; x++)
-        {
-            _grid.CellRange(x, z, out int a, out int b);
-            for (int k = a; k < b; k++)
-            {
-                int j = sorted[k];
-                if (j == i) continue;
-                var d = p - s.Pos[j];
-                float d2 = d.LengthSquared();
-                if (d2 >= SeparationRadius * SeparationRadius) continue;
-                if (d2 < 1e-6f) { d = Jitter(i + j, 19); d2 = d.LengthSquared() + 1e-6f; }
-                float dist = MathF.Sqrt(d2);
-                push += d / dist * (SeparationRadius - dist) * 12f;
-            }
-        }
-        return push;
-    }
-
-    int FindNearestEnemy(int i, Vector2 p, float radius, int targetRegiment = -1)
-    {
-        var s = Soldiers;
-        byte team = s.Team[i];
-        var sorted = _grid.Sorted;
-        int r = (int)MathF.Ceiling(radius / SpatialGrid.CellSize);
-        SpatialGrid.CellCoords(p, out int cx, out int cz);
-        int best = -1; float bestD2 = radius * radius;
-        for (int z = cz - r; z <= cz + r; z++)
-        for (int x = cx - r; x <= cx + r; x++)
-        {
-            _grid.CellRange(x, z, out int a, out int b);
-            for (int k = a; k < b; k++)
-            {
-                int j = sorted[k];
-                if (s.Team[j] == team || (targetRegiment >= 0 && s.RegimentId[j] != targetRegiment)) continue;
-                float d2 = Vector2.DistanceSquared(p, s.Pos[j]);
-                if (d2 < bestD2) { bestD2 = d2; best = j; }
-            }
-        }
-        return best;
     }
 
     void CheckVictory()

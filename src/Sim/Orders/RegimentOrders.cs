@@ -67,7 +67,8 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
         }
     }
 
-    public static float Pace(Regiment reg) => reg.Order switch
+    // FIX(S04): fatigue slows walking and running (FatigueRules.SpeedMul).
+    public static float Pace(Regiment reg) => FatigueRules.SpeedMul(reg.Fatigue) * reg.Order switch
     {
         Move { Run: true } or Attack { Run: true } => reg.Def.RunSpeed,
         null when reg.TargetRegiment >= 0 => reg.Def.RunSpeed,
