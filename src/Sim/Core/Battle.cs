@@ -48,6 +48,10 @@ public sealed class Battle
     // FIX(S04): melee duels (Combat/Melee.cs) and melee spacing (Movement/MeleeSpacing.cs) plug into the tick.
     readonly MeleeSystem _melee;
     readonly MeleeSpacing _spacing;
+    // FIX(S05): morale, routing, rallying and the general (Morale/MoraleSystem.cs) replace the M0 45% rout rule.
+    readonly MoraleSystem _morale;
+    /// <summary>Morale state and the general (S05): commanders, cooldowns, flee directions.</summary>
+    public MoraleSystem Morale => _morale;
 
     public Battle(ScenarioDef scenario, IReadOnlyDictionary<string, UnitDef> units, ITerrain terrain = null)
     {
@@ -73,6 +77,7 @@ public sealed class Battle
         for (int team = 0; team < autoAttack.Length; team++) autoAttack[team] = scenario.Sides[team].AutoAttack;
         _orders = new RegimentOrders(Regiments, autoAttack, Terrain);
         foreach (var r in Regiments) AlivePerTeam[r.Team] += r.Count;
+        _morale = new MoraleSystem(this, autoAttack); // FIX(S05)
         Log($"[Sim] battle '{scenario.Id}' seed {Seed}: {Regiments.Length} regiments, {Soldiers.Count} soldiers");
     }
 
@@ -143,7 +148,6 @@ public sealed class Battle
         _spacing.BeginTick(_aliveSnap); // FIX(S04)
         _melee.BeginTick(n); // FIX(S04)
 
-        UpdateRouting();
         _orders.Step(dt, _melee.Contact); // FIX(S04c): last tick's contact tells attackers they've met the enemy
         Array.Copy(s.Yaw, s.PrevYaw, n);
 
@@ -169,6 +173,7 @@ public sealed class Battle
             Events.Add(new BattleEvent(EventKind.SoldierKilled, i, reg.Id, -1, s.Pos[i]));
         }
         EndMelee(dt); // FIX(S04)
+        _morale.Update(dt, Events, _melee.Contact); // FIX(S05)
         CheckVictory();
     }
 
@@ -192,26 +197,13 @@ public sealed class Battle
     {
         foreach (var o in _pending)
         {
-            if (_orders.Apply(o)) Log($"[Orders] tick {Tick}: {o}");
+            // FIX(S05): broken / re-forming regiments ignore orders; abilities go to the morale system.
+            bool ok = o is UseAbility ua ? _morale.UseAbility(ua)
+                      : _morale.Accepts(Regiments[o.RegimentId]) && _orders.Apply(o);
+            if (ok) Log($"[Orders] tick {Tick}: {o}");
             else Log($"[Orders] tick {Tick}: rejected {o}");
         }
         _pending.Clear();
-    }
-
-    void UpdateRouting()
-    {
-        foreach (var reg in Regiments)
-        {
-            var def = reg.Def;
-            if (!reg.Routing && reg.Alive < reg.Count * def.RoutThreshold)
-            {
-                reg.Activity = RegimentActivity.Routing;
-                reg.MoraleState = MoraleState.Routing;
-                reg.Morale = 0;
-                Events.Add(new BattleEvent(EventKind.RegimentRouted, -1, reg.Id, -1, reg.Centre));
-                Log($"[Sim] tick {Tick}: regiment {reg.Id} (team {reg.Team}) routs, {reg.Alive}/{reg.Count} left");
-            }
-        }
     }
 
     void UpdateSoldier(int i)
@@ -235,7 +227,7 @@ public sealed class Battle
 
         if (reg.Routing)
         {
-            desired = -reg.Facing * def.RoutSpeed + Jitter(i, 9) * 0.8f;
+            desired = _morale.FleeDir(reg.Team) * def.RoutSpeed + Jitter(i, 9) * 0.8f; // FIX(S05): own map edge
             if (p.LengthSquared() > MapRadius * MapRadius)
             {
                 s.State[i] = SoldierState.Gone;

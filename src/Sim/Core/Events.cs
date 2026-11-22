@@ -17,7 +17,16 @@ public enum EventKind
     /// Pos = victim position. MeleeRules.Killed(battle, e) tells whether it killed (valid until the next Step).
     /// </summary>
     MeleeHit,
-    // TODO(S06): ChargeImpact. TODO(S07): ProjectileFired. TODO(S05): RegimentRallied.
+    // FIX(S05): morale events. Regiment = the regiment, Pos = its centre.
+    /// <summary>Morale fell from Steady/Eager to Wavering.</summary>
+    RegimentWavering,
+    /// <summary>A broken regiment re-forms.</summary>
+    RegimentRallied,
+    /// <summary>Broke a second time: it won't rally again (a RegimentRouted is sent the same tick).</summary>
+    RegimentShattered,
+    /// <summary>Soldier = the general, Regiment = his regiment, Pos = where he fell.</summary>
+    GeneralKilled,
+    // TODO(S06): ChargeImpact. TODO(S07): ProjectileFired.
 }
 
 /// <summary>One event. Fields not used by a kind are -1 / zero.</summary>

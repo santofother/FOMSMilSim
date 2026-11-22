@@ -62,7 +62,7 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
                             && float.IsFinite(move.Width) && move.Width > 0:
                 Resize(reg, move.Width);
                 break;
-            case Attack attack when Enemy(reg, attack.TargetRegiment) != null:
+            case Attack attack when Enemy(reg, attack.TargetRegiment, routers: true) != null: // FIX(S05): pursue
             case Halt:
             case Withdraw:
                 break;
@@ -98,7 +98,7 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
                     MoveTo(reg, move, dt);
                     break;
                 case Attack attack:
-                    CloseWith(reg, Enemy(reg, attack.TargetRegiment), dt);
+                    CloseWith(reg, Enemy(reg, attack.TargetRegiment, routers: true), dt);
                     break;
                 case Withdraw:
                     WithdrawFrom(reg, ClosestEnemy(reg), dt);
@@ -410,11 +410,12 @@ internal sealed class RegimentOrders(Regiment[] regiments, bool[] autoAttack, IT
         return MathF.Abs(turn - step);
     }
 
-    Regiment Enemy(Regiment reg, int id)
+    // FIX(S05): an explicit Attack may pursue a routing regiment (until its men leave the field); auto-attack doesn't.
+    Regiment Enemy(Regiment reg, int id, bool routers = false)
     {
         if ((uint)id >= (uint)regiments.Length) return null;
         var enemy = regiments[id];
-        return enemy.Team != reg.Team && !enemy.Routing && enemy.Alive > 0 ? enemy : null;
+        return enemy.Team != reg.Team && (routers ? !enemy.Fled : !enemy.Routing) && enemy.Alive > 0 ? enemy : null;
     }
 
     Regiment ClosestEnemy(Regiment reg)

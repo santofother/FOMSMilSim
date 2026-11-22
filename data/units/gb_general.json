@@ -19,7 +19,7 @@
   "ammo": 0,
   "range": 0,
   "accuracy": 0,
-  "traits": [],
+  "traits": ["general"],
   "hp": 135,
   "melee_hit_chance": 0.59,
   "weapon_damage_random": 15,

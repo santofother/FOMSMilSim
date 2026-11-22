@@ -13,7 +13,8 @@
         { "unit": "gb_swordsmen", "position": [15, -65], "facing": [0, 1] },
         { "unit": "gb_pikemen", "position": [45, -65], "facing": [0, 1] },
         { "unit": "gb_archers", "position": [0, -90], "facing": [0, 1] },
-        { "unit": "gb_light_cav", "position": [80, -80], "facing": [0, 1] }
+        { "unit": "gb_light_cav", "position": [80, -80], "facing": [0, 1] },
+        { "unit": "gb_general", "position": [-40, -95], "facing": [0, 1] }
       ]
     },
     {
@@ -25,7 +26,8 @@
         { "unit": "gb_swordsmen", "position": [-15, 65], "facing": [0, -1] },
         { "unit": "gb_swordsmen", "position": [15, 65], "facing": [0, -1] },
         { "unit": "gb_pikemen", "position": [45, 65], "facing": [0, -1] },
-        { "unit": "gb_spearmen", "position": [75, 65], "facing": [0, -1] }
+        { "unit": "gb_spearmen", "position": [75, 65], "facing": [0, -1] },
+        { "unit": "gb_general", "position": [0, 95], "facing": [0, -1] }
       ]
     }
   ]

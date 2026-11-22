@@ -9,8 +9,9 @@ namespace FOMS.Sim;
 /// <summary>What a regiment is doing right now (for UI and AI).</summary>
 public enum RegimentActivity { Idle, Moving, Engaging, Fighting, Routing, Rallying, Shattered }
 
-/// <summary>Coarse morale band. TODO(S05): morale system.</summary>
-public enum MoraleState { Eager, Steady, Wavering, Routing, Shattered }
+/// <summary>Coarse morale band (S05, GameDesign §3.4). Broken = routing; Shattered = broken twice, never rallies.</summary>
+// FIX(S05): GDD names the fourth state Broken; Routing stays as an alias so older code still compiles.
+public enum MoraleState { Eager, Steady, Wavering, Broken, Shattered, Routing = Broken }
 
 /// <summary>A block of soldiers sharing orders, formation and morale.</summary>
 public sealed class Regiment
@@ -31,9 +32,14 @@ public sealed class Regiment
     /// <summary>Current order, null = none.</summary>
     public Order Order;
     public RegimentActivity Activity = RegimentActivity.Idle;
-    /// <summary>0–100. TODO(S05).</summary>
+    /// <summary>0–100 (S05, Morale/MoraleSystem.cs).</summary>
     public float Morale = 100f;
     public MoraleState MoraleState = MoraleState.Steady;
+    // FIX(S05): what moves this regiment's morale right now, for a tooltip (rebuilt every tick).
+    /// <summary>Modifiers behind the current target morale: unit morale first, then each push up or down.</summary>
+    public readonly System.Collections.Generic.List<MoraleReason> MoraleReasons = new();
+    /// <summary>A broken regiment whose last men have left the field (all Gone).</summary>
+    public bool Fled;
     /// <summary>0 (fresh) – 1 (exhausted). TODO(S04).</summary>
     public float Fatigue;
     /// <summary>Missile volleys left; 0 for melee units. TODO(S07).</summary>
