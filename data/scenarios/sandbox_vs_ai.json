@@ -1,0 +1,32 @@
+{
+  "id": "sandbox_vs_ai",
+  "name": "Sandbox vs AI: you command Blue, Red attacks on its own (placeholder AI until S09)",
+  "seed": 5,
+  "sides": [
+    {
+      "name": "Blue",
+      "auto_attack": false,
+      "regiments": [
+        { "unit": "gb_spearmen", "position": [-75, -65], "facing": [0, 1] },
+        { "unit": "gb_spearmen", "position": [-45, -65], "facing": [0, 1] },
+        { "unit": "gb_swordsmen", "position": [-15, -65], "facing": [0, 1] },
+        { "unit": "gb_swordsmen", "position": [15, -65], "facing": [0, 1] },
+        { "unit": "gb_pikemen", "position": [45, -65], "facing": [0, 1] },
+        { "unit": "gb_archers", "position": [0, -90], "facing": [0, 1] },
+        { "unit": "gb_light_cav", "position": [80, -80], "facing": [0, 1] }
+      ]
+    },
+    {
+      "name": "Red",
+      "auto_attack": true,
+      "regiments": [
+        { "unit": "gb_spearmen", "position": [-75, 65], "facing": [0, -1] },
+        { "unit": "gb_spearmen", "position": [-45, 65], "facing": [0, -1] },
+        { "unit": "gb_swordsmen", "position": [-15, 65], "facing": [0, -1] },
+        { "unit": "gb_swordsmen", "position": [15, 65], "facing": [0, -1] },
+        { "unit": "gb_pikemen", "position": [45, 65], "facing": [0, -1] },
+        { "unit": "gb_spearmen", "position": [75, 65], "facing": [0, -1] }
+      ]
+    }
+  ]
+}

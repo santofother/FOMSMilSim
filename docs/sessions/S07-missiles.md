@@ -6,7 +6,7 @@ agent: Either
 preferred: Claude Opus 5.5 · medium
 alternative: Codex GPT-6.1 Sol · high
 tier: T2
-depends: [S04, S04b, S05]
+depends: [S04, S04b, S04c, S05]
 parallel: [S06, S08]
 branch: s07-missiles
 owns: [src/Sim/Combat/Ranged*, src/Game/View/Projectile*, shaders/projectile*, tests/FOMS.Sim.Tests/Ranged*, tests/FOMS.Sim.Tests/Balance/Ranged*, src/Sim/Orders/RegimentOrders.cs (Attack branch only)]

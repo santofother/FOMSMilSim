@@ -1,6 +1,6 @@
 // BattleScene: loads a scenario, steps the sim at a fixed tick (C2), interpolates, draws, HUD.
 // Owner: S01
-// Command line (after "--"): --scenario=<id> (default m0_clash)  --quit-after=SEC  --shots=10,25
+// Command line (after "--"): --scenario=<id> (default sandbox_vs_ai)  --quit-after=SEC  --shots=10,25
 // Keys: R restart (Space pause, +/- speed live in BattleInput, S03). Camera: WASD/QE/wheel/MMB.
 // Public API: BattleScene.Battle (current sim, read-only use, C1)
 using System;
@@ -21,7 +21,8 @@ public partial class BattleScene : Node3D
     const int MaxTicksPerFrame = 4;
     const float RestartDelay = 6f;
 
-    string _scenarioId = "m0_clash";
+    // FIX(triage S04b playtest): default to a scenario where only Red moves on its own; m0_clash is the perf/test clash.
+    string _scenarioId = "sandbox_vs_ai";
     float _quitAfter = -1f;
     readonly Queue<float> _shots = new();
 
