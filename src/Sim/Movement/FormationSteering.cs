@@ -55,12 +55,15 @@ internal static class FormationSteering
         reg.Centre = mid + reg.Facing * h;
     }
 
-    /// <summary>Turns toward <paramref name="face"/>: small differences turn gradually, big ones snap. True when aligned.</summary>
-    public static bool FaceTowards(Regiment reg, Vector2 face, float omega, float dt)
+    /// <summary>
+    /// Turns toward <paramref name="face"/>: small differences turn gradually, big ones snap (unless
+    /// <paramref name="snap"/> is false: S04c, closing with an enemy). True when aligned.
+    /// </summary>
+    public static bool FaceTowards(Regiment reg, Vector2 face, float omega, float dt, bool snap = true)
     {
         float a = SignedAngle(reg.Facing, face);
         if (MathF.Abs(a) <= FacingTolerance) { reg.Facing = face; return true; }
-        if (MathF.Abs(a) > SnapAngle) { Reface(reg, face); return false; }
+        if (snap && MathF.Abs(a) > SnapAngle) { Reface(reg, face); return false; }
         float limit = omega * dt;
         if (MathF.Abs(a) <= limit) { RotateAboutMiddle(reg, a); reg.Facing = face; return true; }
         RotateAboutMiddle(reg, MathF.CopySign(limit, a));
@@ -69,9 +72,11 @@ internal static class FormationSteering
 
     /// <summary>
     /// One tick of moving the front centre toward <paramref name="target"/>, ending up facing <paramref name="face"/>.
-    /// True when the regiment is there and facing the right way.
+    /// True when the regiment is there and facing the right way. <paramref name="snap"/> false (S04c, near an enemy):
+    /// never face about in one go, turn gradually instead, so the men don't re-form under the enemy's nose.
     /// </summary>
-    public static bool Approach(Regiment reg, Vector2 target, Vector2 face, float pace, float dt, ITerrain terrain)
+    public static bool Approach(Regiment reg, Vector2 target, Vector2 face, float pace, float dt, ITerrain terrain,
+                                bool snap = true)
     {
         float step = pace * dt;
         float omega = WheelRate(reg, pace);
@@ -97,13 +102,18 @@ internal static class FormationSteering
             // Big turn: face the way you're going if that's roughly the final facing (then march and wheel),
             // otherwise keep the final facing and march by the flank / step back with men turned to walk.
             var march = MathF.Abs(SignedAngle(face, d)) <= WheelLimit ? d : face;
-            FaceTowards(reg, march, omega, dt);
+            if (!snap && MathF.Abs(SignedAngle(reg.Facing, march)) > WheelLimit)
+            {
+                FaceTowards(reg, march, omega, dt, snap: false); // turn first, then march
+                return false;
+            }
+            FaceTowards(reg, march, omega, dt, snap);
             Advance(reg, reg.Centre + (target - reg.Centre) / MathF.Max((target - reg.Centre).Length(), 1e-6f) * step,
                 terrain);
             return false;
         }
 
-        bool aligned = FaceTowards(reg, face, omega, dt);
+        bool aligned = FaceTowards(reg, face, omega, dt, snap);
         delta = target - reg.Centre;
         dist = delta.Length();
         if (dist > 1e-5f) Advance(reg, dist <= step ? target : reg.Centre + delta / dist * step, terrain);

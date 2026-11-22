@@ -144,7 +144,7 @@ public sealed class Battle
         _melee.BeginTick(n); // FIX(S04)
 
         UpdateRouting();
-        _orders.Step(dt);
+        _orders.Step(dt, _melee.Contact); // FIX(S04c): last tick's contact tells attackers they've met the enemy
         Array.Copy(s.Yaw, s.PrevYaw, n);
 
         // WHY: each soldier writes only its own slots; damage to others is an order-independent Interlocked.Add (C3).
@@ -247,8 +247,9 @@ public sealed class Battle
         {
             // FIX(S04): melee v2. Soldiers keep their (column-filled) slots and only step up to the enemy on a
             // leash; duels resolve by stats and the side the blow comes from.
-            bool melee = reg.Order is not Withdraw
-                         && reg.Activity is RegimentActivity.Idle or RegimentActivity.Fighting;
+            // FIX(S04c): men fight whoever is in reach whatever the regiment is doing (a marching block that meets
+            // the enemy fights back instead of being squeezed through it). Withdrawing men don't.
+            bool melee = reg.Order is not Withdraw;
             int t = _spacing.ChooseTarget(i, reg, p, melee, dt);
             s.Target[i] = t;
             desired = _spacing.Desired(i, reg, p, t, RegimentOrders.Pace(reg));

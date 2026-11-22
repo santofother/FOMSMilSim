@@ -9,7 +9,7 @@
 | A | S03 | Selection & orders UI | DONE | Claude Sonnet 5.5 · medium | T3 | S01 | S02 | 2026-11-21 s03-selection-ui |
 | A | S04 | Melee v2 + fatigue | DONE | Claude Opus 5.5 · high | T1 | S02 | S08 | 2026-11-21 s04-melee |
 | A | S04b | Formation movement (wheeling, facing about, re-forming) | DONE | Claude Opus 5.5 · high | T1 | S04 | S05, S08 | 2026-11-21 s04b-formation-movement |
-| A | S04c | Regiment contact (lines meet square, no walking through, hold shape) | READY | Claude Opus 5.5 · high | T1 | S04b | S05, S08 |  |
+| A | S04c | Regiment contact (lines meet square, no walking through, hold shape) | DONE | Claude Opus 5.5 · high | T1 | S04b | S05, S08 | 2026-11-22 s04c-regiment-contact |
 | A | S05 | Morale, routing, rallying, the general | READY | Codex GPT-6.1 Sol · high | T2 | S04 | S08 |  |
 | A | S06 | Charges & cavalry | TODO | Codex GPT-6 Astra · medium | T1 | S04, S04b, S04c, S05 | S07, S08 |  |
 | A | S07 | Missiles (bows, slings, crossbows, javelins) | TODO | Claude Opus 5.5 · medium | T2 | S04, S04b, S04c, S05 | S06, S08 |  |
@@ -18,4 +18,4 @@
 | A | P1 | Playtest — fun check | TODO | User | - | S09, S08 | - |  |
 | A | T1 | Triage after P1 → wave B1 cards | TODO | Claude Opus 5.5 · medium | T2 | P1 | - |  |
 
-READY now: S04c, S05, S08
+READY now: S05, S08
